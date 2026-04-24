@@ -1,22 +1,12 @@
 <div align="center">
 
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/headerDark.svg" />
-    <img src="assets/headerLight.svg" alt="export" />
-  </picture>
+  <img src="assets/header.png" alt="export - Codex 会话导出为 Markdown 转录稿" />
 
   <p><strong>将 Codex 会话导出为干净、适合 LLM 再分析的 Markdown。</strong></p>
 
   <p>
     <a href="README.md">English</a> |
     简体中文
-  </p>
-
-  <p>
-    <a href="#快速开始">快速开始</a> |
-    <a href="#功能特性">功能特性</a> |
-    <a href="#安全边界">安全边界</a> |
-    <a href="#开源协议">开源协议</a>
   </p>
 
   <p>
@@ -28,22 +18,6 @@
 </div>
 
 `export` 是一个 Codex Skill，用于把本地 Codex 会话历史导出为可读的 Markdown 转录稿。它为 Codex 用户提供接近 `/export` 的工作流，同时保持正常的 Skill 使用方式：安装一次，然后在 Codex 对话里直接调用 `$export`。
-
-## 为什么需要它
-
-导出会话的价值在于，你可以把完整交互过程交给另一个模型复盘，分析自己和模型在协作中反复出现的问题，再把这些经验沉淀成稳定的项目规则，例如 `AGENTS.md`。
-
-默认导出 Markdown，是因为 LLM 的输入输出本身就大量使用 Markdown。导出的内容既适合人阅读、归档和 diff，也适合再次交给模型做分析。
-
-## 功能特性
-
-- **一条命令安装**：通过 `npx skills add` 安装为 Codex Skill。
-- **对话内直接使用**：安装后在 Codex 中直接调用 `$export`。
-- **Markdown 优先**：输出干净的 Markdown 转录稿，便于人和 LLM 阅读。
-- **优先导出当前会话**：可用时优先选择当前 Codex conversation。
-- **工作区感知回退**：当前会话 id 不可用时，回退到当前工作区最近会话，再回退到全局最近会话。
-- **隐私友好的默认边界**：默认排除 system prompt、developer 指令、AGENTS 上下注入、环境上下文注入、reasoning 记录和工具日志。
-- **可选工具日志**：只有你明确要求包含 tool logs 时，才会导出工具调用和命令输出。
 
 ## 安装
 
@@ -78,6 +52,22 @@ $export export this session with tool logs
 ```
 
 安装完成后不需要再运行任何额外 shell 命令。
+
+## 为什么需要它
+
+导出会话的价值在于，你可以把完整交互过程交给另一个模型复盘，分析自己和模型在协作中反复出现的问题，再把这些经验沉淀成稳定的项目规则，例如 `AGENTS.md`。
+
+默认导出 Markdown，是因为 LLM 的输入输出本身就大量使用 Markdown。导出的内容既适合人阅读、归档和 diff，也适合再次交给模型做分析。
+
+## 功能特性
+
+- **一条命令安装**：通过 `npx skills add` 安装为 Codex Skill。
+- **对话内直接使用**：安装后在 Codex 中直接调用 `$export`。
+- **Markdown 优先**：输出干净的 Markdown 转录稿，便于人和 LLM 阅读。
+- **优先导出当前会话**：可用时优先选择当前 Codex conversation。
+- **工作区感知回退**：当前会话 id 不可用时，回退到当前工作区最近会话，再回退到全局最近会话。
+- **隐私友好的默认边界**：默认排除 system prompt、developer 指令、AGENTS 上下注入、环境上下文注入、reasoning 记录和工具日志。
+- **可选工具日志**：只有你明确要求包含 tool logs 时，才会导出工具调用和命令输出。
 
 ## 安全边界
 

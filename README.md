@@ -1,22 +1,12 @@
 <div align="center">
 
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/headerDark.svg" />
-    <img src="assets/headerLight.svg" alt="export" />
-  </picture>
+  <img src="assets/header.png" alt="export - Codex sessions to Markdown transcripts" />
 
   <p><strong>Export Codex sessions as clean, LLM-ready Markdown.</strong></p>
 
   <p>
     English |
     <a href="README_zh.md">简体中文</a>
-  </p>
-
-  <p>
-    <a href="#quick-start">Quick Start</a> |
-    <a href="#features">Features</a> |
-    <a href="#safety-boundaries">Safety Boundaries</a> |
-    <a href="#license">License</a>
   </p>
 
   <p>
@@ -28,22 +18,6 @@
 </div>
 
 `export` is a Codex Skill for turning local Codex session history into a readable Markdown transcript. It gives Codex users a `/export`-style workflow today, while keeping the normal user surface inside Codex: install the Skill once, then invoke `$export` in conversation.
-
-## Why
-
-Session export is useful when you want another model pass to review how a conversation went, identify repeated mistakes, and turn those lessons into durable project rules such as `AGENTS.md`.
-
-Markdown is the default output because LLM conversations already use Markdown heavily. The exported transcript is easy to read, diff, archive, and feed back into another model for analysis.
-
-## Features
-
-- **One-command installation**: install as a Codex Skill with `npx skills add`.
-- **Conversation-native usage**: use `$export` directly inside Codex after installation.
-- **Markdown-first output**: produces clean transcripts designed for humans and LLMs.
-- **Current-session selection**: prefers the active Codex conversation when available.
-- **Workspace-aware fallback**: falls back to the latest session for the current workspace, then latest globally.
-- **Privacy-conscious defaults**: excludes system prompts, developer instructions, AGENTS context injection, environment context injection, reasoning records, and tool logs by default.
-- **Optional tool-log export**: include tool logs only when you explicitly ask for them.
 
 ## Installation
 
@@ -78,6 +52,22 @@ $export export this session with tool logs
 ```
 
 No extra shell commands are required after installation.
+
+## Why
+
+Session export is useful when you want another model pass to review how a conversation went, identify repeated mistakes, and turn those lessons into durable project rules such as `AGENTS.md`.
+
+Markdown is the default output because LLM conversations already use Markdown heavily. The exported transcript is easy to read, diff, archive, and feed back into another model for analysis.
+
+## Features
+
+- **One-command installation**: install as a Codex Skill with `npx skills add`.
+- **Conversation-native usage**: use `$export` directly inside Codex after installation.
+- **Markdown-first output**: produces clean transcripts designed for humans and LLMs.
+- **Current-session selection**: prefers the active Codex conversation when available.
+- **Workspace-aware fallback**: falls back to the latest session for the current workspace, then latest globally.
+- **Privacy-conscious defaults**: excludes system prompts, developer instructions, AGENTS context injection, environment context injection, reasoning records, and tool logs by default.
+- **Optional tool-log export**: include tool logs only when you explicitly ask for them.
 
 ## Safety Boundaries
 

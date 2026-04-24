@@ -8,6 +8,11 @@
   <p><strong>Export Codex sessions as clean, LLM-ready Markdown.</strong></p>
 
   <p>
+    English |
+    <a href="README_zh.md">简体中文</a>
+  </p>
+
+  <p>
     <a href="#quick-start">Quick Start</a> |
     <a href="#features">Features</a> |
     <a href="#safety-boundaries">Safety Boundaries</a> |

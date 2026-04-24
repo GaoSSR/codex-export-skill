@@ -1,0 +1,4 @@
+interface:
+  display_name: "Export"
+  short_description: "Export Codex session to Markdown"
+  default_prompt: "Use $export to export the current Codex session to Markdown."

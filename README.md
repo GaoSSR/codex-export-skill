@@ -29,12 +29,16 @@ Tool calls and command output are included only when explicitly requested with `
 ## Install
 
 ```bash
-git clone https://github.com/GaoSSR/codex-export-skill.git
-mkdir -p "$HOME/.codex/skills/export"
-cp -R codex-export-skill/export/. "$HOME/.codex/skills/export/"
+npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
 ```
 
-Restart Codex after installing the Skill so the `$export` trigger is discovered.
+This installs `export` as a global Codex Skill. Restart Codex after installing so the `$export` trigger is discovered.
+
+To inspect before installing:
+
+```bash
+npx skills add GaoSSR/codex-export-skill --list
+```
 
 ## Usage
 
@@ -49,20 +53,26 @@ The Skill writes the Markdown file into `codex-session-exports/` under the activ
 You can also run the bundled script directly:
 
 ```bash
-python3 "$HOME/.codex/skills/export/scripts/export_codex_session.py" \
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" \
   --output-dir "$(pwd)/codex-session-exports"
 ```
 
 List recent sessions:
 
 ```bash
-python3 "$HOME/.codex/skills/export/scripts/export_codex_session.py" --list
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --list
 ```
 
 Export a specific session:
 
 ```bash
-python3 "$HOME/.codex/skills/export/scripts/export_codex_session.py" \
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" \
   --session-id <session-id> \
   --output-dir "$(pwd)/codex-session-exports"
 ```
@@ -70,7 +80,9 @@ python3 "$HOME/.codex/skills/export/scripts/export_codex_session.py" \
 Export with tool logs:
 
 ```bash
-python3 "$HOME/.codex/skills/export/scripts/export_codex_session.py" \
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" \
   --include-tools \
   --output-dir "$(pwd)/codex-session-exports"
 ```
@@ -93,13 +105,13 @@ Codex session files are read from `CODEX_HOME` or `~/.codex`, including `session
 Run the test suite:
 
 ```bash
-python3 -m unittest discover -s export/tests -p 'test_*.py' -v
+python3 -m unittest discover -s skills/export/tests -p 'test_*.py' -v
 ```
 
 Validate the Skill shape when Codex's system skill validator is available:
 
 ```bash
-python3 "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" export
+python3 "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" skills/export
 ```
 
 ## Upstream Direction

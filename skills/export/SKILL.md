@@ -14,7 +14,8 @@ Export a Codex session JSONL file from `~/.codex/sessions` or `~/.codex/archived
 1. Run the exporter from the active workspace:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.codex/skills/export}"
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --output-dir "$(pwd)/codex-session-exports"
 ```
 
@@ -42,21 +43,24 @@ python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --output-dir "$(pwd)
 List recent sessions:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.codex/skills/export}"
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --list
 ```
 
 Export a specific session:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.codex/skills/export}"
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --session-id <session-id> --output-dir "$(pwd)/codex-session-exports"
 ```
 
 Export with tool logs:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.codex/skills/export}"
+EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
+[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --include-tools --output-dir "$(pwd)/codex-session-exports"
 ```
 

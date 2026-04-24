@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.1.1 - 2026-04-24
 
 - Redact Codex Skill context blocks embedded in visible messages while preserving surrounding user text.
 

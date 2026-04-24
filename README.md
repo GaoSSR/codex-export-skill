@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/header.png" width="720" alt="export - Codex sessions to Markdown transcripts" />
+  <img src="assets/header.png" width="480" alt="export - Codex sessions to Markdown transcripts" />
 
   <p><strong>Export Codex sessions as clean, LLM-ready Markdown.</strong></p>
 

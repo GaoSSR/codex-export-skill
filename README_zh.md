@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/header.png" width="720" alt="export - Codex 会话导出为 Markdown 转录稿" />
+  <img src="assets/header.png" width="480" alt="export - Codex 会话导出为 Markdown 转录稿" />
 
   <p><strong>将 Codex 会话导出为干净、适合 LLM 再分析的 Markdown。</strong></p>
 

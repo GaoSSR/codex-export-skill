@@ -24,7 +24,7 @@ By default, the Skill does not export:
 - encrypted reasoning
 - tool calls or command output
 
-Tool calls and command output are included only when explicitly requested with `--include-tools`.
+Tool calls and command output are included only when you explicitly ask the Skill to include tool logs.
 
 ## Install
 
@@ -42,7 +42,7 @@ npx skills add GaoSSR/codex-export-skill --list
 
 ## Usage
 
-In Codex, ask:
+After installation, use the Skill directly inside Codex:
 
 ```text
 $export export the current session to Markdown
@@ -50,55 +50,25 @@ $export export the current session to Markdown
 
 The Skill writes the Markdown file into `codex-session-exports/` under the active workspace and replies with the absolute path plus a short summary.
 
-You can also run the bundled script directly:
+More examples:
 
-```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
-python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" \
-  --output-dir "$(pwd)/codex-session-exports"
+```text
+$export list recent Codex sessions
+$export export session <session-id> to Markdown
+$export export this session with tool logs
 ```
 
-List recent sessions:
-
-```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
-python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --list
-```
-
-Export a specific session:
-
-```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
-python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" \
-  --session-id <session-id> \
-  --output-dir "$(pwd)/codex-session-exports"
-```
-
-Export with tool logs:
-
-```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
-python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" \
-  --include-tools \
-  --output-dir "$(pwd)/codex-session-exports"
-```
+No extra shell commands are required after installation.
 
 ## Session Selection
 
-The exporter selects a session in this order:
+When you do not specify a session, the Skill tries to export the current Codex conversation first. If the current conversation id is unavailable, it falls back to the latest session recorded for the active workspace, then to the latest session globally.
 
-1. `--session-file <path>`
-2. `CODEX_SESSION_FILE`
-3. `--session-id <id>`
-4. `CODEX_THREAD_ID` or `CODEX_SESSION_ID`
-5. latest Codex session whose recorded cwd matches the active workspace
-6. latest Codex session globally
+If you want a specific session, ask for it by session id:
 
-Codex session files are read from `CODEX_HOME` or `~/.codex`, including `sessions/**/*.jsonl` and `archived_sessions/*.jsonl`.
+```text
+$export export session <session-id> to Markdown
+```
 
 ## Development
 

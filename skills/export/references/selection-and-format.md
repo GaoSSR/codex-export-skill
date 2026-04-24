@@ -41,6 +41,10 @@ The exporter intentionally skips:
 
 Visible message content is emitted as-is. Tool call arguments and tool outputs are wrapped in code fences. If content contains triple backticks, the exporter chooses a longer fence so the Markdown remains valid.
 
+Local source file paths and cwd values in Markdown metadata are redacted by default to their basenames. Use `--show-paths` only when a full source path is intentionally needed.
+
+Use `--json` when the caller needs stable machine-readable result fields such as `file`, `session_id`, `source_file`, `selected_by`, `message_count`, and `include_tools`.
+
 ## Known Boundary
 
 An export captures the session file state at the moment the script reads it. The assistant response that reports the exported path is written after the export command finishes, so it is not part of that same export.

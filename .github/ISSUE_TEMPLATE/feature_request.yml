@@ -1,0 +1,31 @@
+name: Feature Request
+description: Suggest an improvement to export behavior, Skill usage, or transcript formatting.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow or limitation should this solve?
+      placeholder: I want to export...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the behavior you want.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Other approaches or workarounds you considered.
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy Impact
+      description: Does this require exporting more session data, tool logs, or local paths?

@@ -13,6 +13,7 @@
     <img alt="Codex Skill" src="https://img.shields.io/badge/Codex-Skill-111827?style=flat-square" />
     <img alt="Markdown" src="https://img.shields.io/badge/output-Markdown-2563EB?style=flat-square" />
     <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-0F766E?style=flat-square" />
+    <img alt="CI" src="https://github.com/GaoSSR/codex-export-skill/actions/workflows/ci.yml/badge.svg" />
   </p>
 
 </div>
@@ -20,6 +21,12 @@
 `export` is a Codex Skill that brings Claude Code's `/export` workflow to Codex users. It turns local Codex session history into clean Markdown transcripts, making conversations easier for LLMs to parse, review, and analyze.
 
 ## Installation
+
+Requirements:
+
+- Codex with Skill support
+- Python 3.10 or newer available as `python3`
+- Node.js/npm for `npx skills`
 
 ```bash
 npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
@@ -72,6 +79,7 @@ Markdown is the default output because LLM conversations already use Markdown he
 - **Current-session selection**: prefers the active Codex conversation when available.
 - **Workspace-aware fallback**: falls back to the latest session for the current workspace, then latest globally.
 - **Privacy-conscious defaults**: excludes system prompts, developer instructions, AGENTS context injection, environment context injection, reasoning records, and tool logs by default.
+- **Path redaction by default**: Markdown metadata shows only local source basenames unless full source paths are explicitly requested.
 - **Optional tool-log export**: include tool logs only when you explicitly ask for them.
 
 ## Safety Boundaries
@@ -81,6 +89,8 @@ By default, the export includes:
 - visible user messages
 - visible assistant messages
 - session metadata such as session id, source file, cwd, timestamps, originator, and CLI version
+
+Local source file paths and cwd metadata are redacted by default. The exported Markdown keeps only basenames such as `rollout-...jsonl` and the workspace folder name.
 
 By default, the export excludes:
 
@@ -92,6 +102,8 @@ By default, the export excludes:
 - tool calls and command output
 
 Tool calls and command output are exported only when you explicitly ask the Skill to include tool logs.
+
+Advanced script users can pass `--json` for machine-readable output, or `--show-paths` when they intentionally need full local source paths in Markdown metadata.
 
 ## Session Selection
 
@@ -114,5 +126,7 @@ Issues and pull requests are welcome. Please keep changes aligned with the core 
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE).
+
+Copyright 2026 GaoSSR.
 
 This is not an official OpenAI project.

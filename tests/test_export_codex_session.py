@@ -4,6 +4,8 @@ import json
 import os
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 import sys
 
@@ -231,6 +233,65 @@ class ExportCodexSessionTest(unittest.TestCase):
         self.assertIn("visible user request", markdown)
         self.assertNotIn("secret project rules", markdown)
 
+    def test_skips_environment_context_injection(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": "<environment_context>\n<cwd>/secret/repo</cwd>\n</environment_context>",
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:01Z",
+                        "type": "event_msg",
+                        "payload": {"type": "user_message", "message": "visible user request"},
+                    },
+                ],
+            )
+
+            transcript = exporter.read_transcript(session_file, include_tools=False)
+            markdown = exporter.render_markdown(transcript, selected_by="test", include_tools=False)
+
+        self.assertIn("visible user request", markdown)
+        self.assertNotIn("/secret/repo", markdown)
+
+    def test_preserves_quoted_context_marker_in_normal_user_message(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": 'Please explain what "<environment_context>" means in docs.',
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:01Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": "A normal message can mention <INSTRUCTIONS> literally.",
+                        },
+                    },
+                ],
+            )
+
+            transcript = exporter.read_transcript(session_file, include_tools=False)
+            markdown = exporter.render_markdown(transcript, selected_by="test", include_tools=False)
+
+        self.assertIn('Please explain what "<environment_context>" means in docs.', markdown)
+        self.assertIn("A normal message can mention <INSTRUCTIONS> literally.", markdown)
+
     def test_preserves_literal_agents_mention_in_normal_user_message(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
@@ -252,6 +313,151 @@ class ExportCodexSessionTest(unittest.TestCase):
             markdown = exporter.render_markdown(transcript, selected_by="test", include_tools=False)
 
         self.assertIn("Please review whether AGENTS.md should mention exports.", markdown)
+
+    def test_mixed_user_sources_only_drop_duplicate_response_user_messages(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "event_msg",
+                        "payload": {"type": "user_message", "message": "first visible user"},
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "message",
+                            "role": "user",
+                            "content": [{"type": "input_text", "text": "first visible user"}],
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:02Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "message",
+                            "role": "user",
+                            "content": [{"type": "input_text", "text": "response-only user"}],
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:03Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "message",
+                            "role": "assistant",
+                            "content": [{"type": "output_text", "text": "assistant reply"}],
+                        },
+                    },
+                ],
+            )
+
+            transcript = exporter.read_transcript(session_file, include_tools=False)
+
+        self.assertEqual(["user", "user", "assistant"], [event.role for event in transcript.events])
+        self.assertEqual("first visible user", transcript.events[0].content)
+        self.assertEqual("response-only user", transcript.events[1].content)
+        self.assertEqual("assistant reply", transcript.events[2].content)
+
+    def test_mixed_user_sources_preserve_same_text_at_different_timestamps(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "event_msg",
+                        "payload": {"type": "user_message", "message": "repeat"},
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:01Z",
+                        "type": "response_item",
+                        "payload": {
+                            "type": "message",
+                            "role": "user",
+                            "content": [{"type": "input_text", "text": "repeat"}],
+                        },
+                    },
+                ],
+            )
+
+            transcript = exporter.read_transcript(session_file, include_tools=False)
+
+        self.assertEqual(["repeat", "repeat"], [event.content for event in transcript.events])
+
+    def test_markdown_redacts_source_paths_by_default(self) -> None:
+        transcript = exporter.Transcript(
+            source_file=Path("/Users/example/.codex/sessions/session.jsonl"),
+            session_id="session",
+            cwd="/Users/example/private/repo",
+            created_at="2026-04-24T02:00:00Z",
+            cli_version="0.124.0",
+            originator="Codex",
+            events=[exporter.TranscriptEvent(role="user", content="hello")],
+        )
+
+        markdown = exporter.render_markdown(transcript, selected_by="test", include_tools=False)
+        full_path_markdown = exporter.render_markdown(
+            transcript,
+            selected_by="test",
+            include_tools=False,
+            redact_paths=False,
+        )
+
+        self.assertIn("- Source File: `session.jsonl`", markdown)
+        self.assertIn("- CWD: `repo`", markdown)
+        self.assertNotIn("/Users/example", markdown)
+        self.assertIn("/Users/example/.codex/sessions/session.jsonl", full_path_markdown)
+        self.assertIn("/Users/example/private/repo", full_path_markdown)
+
+    def test_json_output_is_machine_readable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            output_file = Path(tmp) / "export.md"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "session_meta",
+                        "payload": {
+                            "id": "019dbd51-d1c6-7943-a58a-9fa11f102ea8",
+                            "cwd": "/repo",
+                            "timestamp": "2026-04-24T02:00:00Z",
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:01Z",
+                        "type": "event_msg",
+                        "payload": {"type": "user_message", "message": "export this session"},
+                    },
+                ],
+            )
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = exporter.main(
+                    [
+                        "--session-file",
+                        str(session_file),
+                        "--output",
+                        str(output_file),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual(str(output_file.resolve()), payload["file"])
+        self.assertEqual("019dbd51-d1c6-7943-a58a-9fa11f102ea8", payload["session_id"])
+        self.assertEqual("rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl", payload["source_file"])
+        self.assertFalse(payload["include_tools"])
+        self.assertTrue(payload["redact_paths"])
 
 
 if __name__ == "__main__":

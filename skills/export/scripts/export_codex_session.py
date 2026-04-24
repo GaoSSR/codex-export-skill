@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
@@ -131,6 +132,15 @@ def normalize_path(value: str | Path) -> str:
     return str(Path(value).expanduser().resolve())
 
 
+def display_local_path(value: str | Path | None, *, redact_paths: bool) -> str:
+    if not value:
+        return "unknown"
+    path = Path(value).expanduser()
+    if not redact_paths:
+        return str(path.resolve())
+    return path.name or str(path)
+
+
 def select_session(
     *,
     codex_home: Path,
@@ -196,14 +206,17 @@ def text_from_content_items(items: Any, wanted_types: set[str]) -> str:
 
 def looks_like_context_injection(text: str) -> bool:
     stripped = text.lstrip()
-    markers = (
-        "# AGENTS.md instructions",
-        "<INSTRUCTIONS>",
-        "<environment_context>",
-        "<permissions instructions>",
-        "# Global Coding Rules",
+    head = stripped[:5000]
+    if stripped.startswith("# AGENTS.md instructions"):
+        return True
+    if stripped.startswith("# Global Coding Rules") and "## General Engineering Lessons" in head:
+        return True
+    wrapper_markers = (
+        ("<INSTRUCTIONS>", "</INSTRUCTIONS>"),
+        ("<environment_context>", "</environment_context>"),
+        ("<permissions instructions>", "</permissions instructions>"),
     )
-    return any(marker in stripped[:2000] for marker in markers)
+    return any(stripped.startswith(start) and end in head for start, end in wrapper_markers)
 
 
 def pretty_json_string(value: str) -> str:
@@ -334,7 +347,21 @@ def read_transcript(path: Path, *, include_tools: bool) -> Transcript:
     if not has_event_user_messages:
         transcript.events = [event for _, event in collected_events]
     else:
-        transcript.events = [event for source, event in collected_events if source != "response-user"]
+        event_user_messages: Counter[tuple[str | None, str]] = Counter(
+            (event.timestamp, event.content) for source, event in collected_events if source == "event-user"
+        )
+        dropped_response_user_messages: Counter[tuple[str | None, str]] = Counter()
+        deduped_events: list[TranscriptEvent] = []
+        for source, event in collected_events:
+            if source == "event-user":
+                deduped_events.append(event)
+                continue
+            key = (event.timestamp, event.content)
+            if source == "response-user" and event_user_messages[key] > dropped_response_user_messages[key]:
+                dropped_response_user_messages[key] += 1
+                continue
+            deduped_events.append(event)
+        transcript.events = deduped_events
 
     return transcript
 
@@ -367,7 +394,13 @@ def render_content(event: TranscriptEvent) -> list[str]:
     return [content]
 
 
-def render_markdown(transcript: Transcript, *, selected_by: str, include_tools: bool) -> str:
+def render_markdown(
+    transcript: Transcript,
+    *,
+    selected_by: str,
+    include_tools: bool,
+    redact_paths: bool = True,
+) -> str:
     exported_at = dt.datetime.now().astimezone().isoformat(timespec="seconds")
     lines: list[str] = [
         "# Codex Session Export",
@@ -375,9 +408,9 @@ def render_markdown(transcript: Transcript, *, selected_by: str, include_tools: 
         "## Metadata",
         "",
         f"- Session ID: `{transcript.session_id}`",
-        f"- Source File: `{transcript.source_file}`",
+        f"- Source File: `{display_local_path(transcript.source_file, redact_paths=redact_paths)}`",
         f"- Selected By: {selected_by}",
-        f"- CWD: `{transcript.cwd or 'unknown'}`",
+        f"- CWD: `{display_local_path(transcript.cwd, redact_paths=redact_paths)}`",
         f"- Created At: {transcript.created_at or 'unknown'}",
         f"- Exported At: {exported_at}",
         f"- Originator: {transcript.originator or 'unknown'}",
@@ -430,16 +463,60 @@ def write_export(markdown: str, *, output: str | None, output_dir: str | None, t
     return target
 
 
-def list_recent_sessions(codex_home: Path, *, cwd: str, limit: int) -> int:
+def session_summary_to_dict(summary: SessionSummary, *, cwd: str, redact_paths: bool) -> dict[str, Any]:
+    wanted_cwd = normalize_path(cwd)
+    return {
+        "session_id": summary.session_id,
+        "updated_at": dt.datetime.fromtimestamp(summary.updated_at).astimezone().isoformat(timespec="seconds"),
+        "cwd_match": bool(summary.cwd and normalize_path(summary.cwd) == wanted_cwd),
+        "cwd": display_local_path(summary.cwd, redact_paths=redact_paths),
+        "path": display_local_path(summary.path, redact_paths=redact_paths),
+        "line_count": summary.line_count,
+    }
+
+
+def export_result_to_dict(
+    *,
+    output_path: Path,
+    summary: SessionSummary,
+    transcript: Transcript,
+    selected_by: str,
+    include_tools: bool,
+    redact_paths: bool,
+) -> dict[str, Any]:
+    return {
+        "file": str(output_path),
+        "session_id": transcript.session_id,
+        "source_file": display_local_path(summary.path, redact_paths=redact_paths),
+        "selected_by": selected_by,
+        "message_count": len(transcript.events),
+        "include_tools": include_tools,
+        "redact_paths": redact_paths,
+    }
+
+
+def list_recent_sessions(codex_home: Path, *, cwd: str, limit: int, json_output: bool, redact_paths: bool) -> int:
     summaries = load_summaries(codex_home)
     wanted_cwd = normalize_path(cwd)
-    print(f"Codex home: {codex_home}")
-    print(f"Current cwd: {wanted_cwd}")
+    if json_output:
+        payload = {
+            "codex_home": display_local_path(codex_home, redact_paths=redact_paths),
+            "current_cwd": display_local_path(wanted_cwd, redact_paths=redact_paths),
+            "sessions": [
+                session_summary_to_dict(summary, cwd=cwd, redact_paths=redact_paths)
+                for summary in summaries[:limit]
+            ],
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"Codex home: {display_local_path(codex_home, redact_paths=redact_paths)}")
+    print(f"Current cwd: {display_local_path(wanted_cwd, redact_paths=redact_paths)}")
     print("")
     for summary in summaries[:limit]:
         cwd_marker = "cwd-match" if summary.cwd and normalize_path(summary.cwd) == wanted_cwd else "other-cwd"
         updated = dt.datetime.fromtimestamp(summary.updated_at).astimezone().isoformat(timespec="seconds")
-        print(f"{summary.session_id}  {updated}  {cwd_marker}  {summary.path}")
+        print(f"{summary.session_id}  {updated}  {cwd_marker}  {display_local_path(summary.path, redact_paths=redact_paths)}")
     return 0
 
 
@@ -452,8 +529,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", help="Write to this exact Markdown file path.")
     parser.add_argument("--output-dir", help="Directory for generated Markdown exports.")
     parser.add_argument("--include-tools", action="store_true", help="Include tool call arguments and tool outputs.")
+    parser.add_argument("--json", action="store_true", help="Print a machine-readable JSON result.")
     parser.add_argument("--list", action="store_true", help="List recent Codex sessions instead of exporting.")
     parser.add_argument("--limit", type=int, default=20, help="Session count for --list.")
+    path_group = parser.add_mutually_exclusive_group()
+    path_group.add_argument(
+        "--redact-paths",
+        dest="redact_paths",
+        action="store_true",
+        help="Redact local source paths in Markdown metadata and CLI output. This is the default.",
+    )
+    path_group.add_argument(
+        "--show-paths",
+        dest="redact_paths",
+        action="store_false",
+        help="Include absolute source paths and cwd metadata in Markdown and CLI output.",
+    )
+    parser.set_defaults(redact_paths=True)
     return parser
 
 
@@ -463,7 +555,13 @@ def main(argv: list[str] | None = None) -> int:
 
     codex_home = resolve_codex_home()
     if args.list:
-        return list_recent_sessions(codex_home, cwd=args.cwd, limit=args.limit)
+        return list_recent_sessions(
+            codex_home,
+            cwd=args.cwd,
+            limit=args.limit,
+            json_output=args.json,
+            redact_paths=args.redact_paths,
+        )
 
     try:
         summary, selected_by = select_session(
@@ -477,19 +575,40 @@ def main(argv: list[str] | None = None) -> int:
             summary.path,
             include_tools=args.include_tools,
         )
-        markdown = render_markdown(transcript, selected_by=selected_by, include_tools=args.include_tools)
+        markdown = render_markdown(
+            transcript,
+            selected_by=selected_by,
+            include_tools=args.include_tools,
+            redact_paths=args.redact_paths,
+        )
         output_path = write_export(markdown, output=args.output, output_dir=args.output_dir, transcript=transcript)
     except Exception as exc:
+        if args.json:
+            print(json.dumps({"error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+            return 1
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
+    result = export_result_to_dict(
+        output_path=output_path,
+        summary=summary,
+        transcript=transcript,
+        selected_by=selected_by,
+        include_tools=args.include_tools,
+        redact_paths=args.redact_paths,
+    )
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
+
     print("Exported Codex session markdown")
-    print(f"file: {output_path}")
-    print(f"session_id: {transcript.session_id}")
-    print(f"source_file: {summary.path}")
-    print(f"selected_by: {selected_by}")
-    print(f"message_count: {len(transcript.events)}")
-    print(f"include_tools: {str(args.include_tools).lower()}")
+    print(f"file: {result['file']}")
+    print(f"session_id: {result['session_id']}")
+    print(f"source_file: {result['source_file']}")
+    print(f"selected_by: {result['selected_by']}")
+    print(f"message_count: {result['message_count']}")
+    print(f"include_tools: {str(result['include_tools']).lower()}")
+    print(f"redact_paths: {str(result['redact_paths']).lower()}")
     return 0
 
 

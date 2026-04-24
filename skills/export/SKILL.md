@@ -1,6 +1,6 @@
 ---
 name: export
-description: Export the current Codex conversation/session to a Markdown file. Use when the user says $export, /export, asks to export this/current Codex session, save this conversation as Markdown, or export Codex chat history.
+description: Use when the user says $export or /export, asks to export the current Codex session, save this conversation as Markdown, or export Codex chat history.
 ---
 
 # Export
@@ -14,8 +14,13 @@ Export a Codex session JSONL file from `~/.codex/sessions` or `~/.codex/archived
 1. Run the exporter from the active workspace:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+if [ -n "${CODEX_EXPORT_SKILL_DIR:-}" ]; then
+  EXPORT_SKILL_DIR="$CODEX_EXPORT_SKILL_DIR"
+elif [ -f "$HOME/.codex/skills/export/scripts/export_codex_session.py" ]; then
+  EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+else
+  EXPORT_SKILL_DIR="$HOME/.agents/skills/export"
+fi
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --output-dir "$(pwd)/codex-session-exports"
 ```
 
@@ -43,24 +48,39 @@ python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --output-dir "$(pwd)
 List recent sessions:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+if [ -n "${CODEX_EXPORT_SKILL_DIR:-}" ]; then
+  EXPORT_SKILL_DIR="$CODEX_EXPORT_SKILL_DIR"
+elif [ -f "$HOME/.codex/skills/export/scripts/export_codex_session.py" ]; then
+  EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+else
+  EXPORT_SKILL_DIR="$HOME/.agents/skills/export"
+fi
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --list
 ```
 
 Export a specific session:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+if [ -n "${CODEX_EXPORT_SKILL_DIR:-}" ]; then
+  EXPORT_SKILL_DIR="$CODEX_EXPORT_SKILL_DIR"
+elif [ -f "$HOME/.codex/skills/export/scripts/export_codex_session.py" ]; then
+  EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+else
+  EXPORT_SKILL_DIR="$HOME/.agents/skills/export"
+fi
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --session-id <session-id> --output-dir "$(pwd)/codex-session-exports"
 ```
 
 Export with tool logs:
 
 ```bash
-EXPORT_SKILL_DIR="${CODEX_EXPORT_SKILL_DIR:-$HOME/.agents/skills/export}"
-[ -f "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" ] || EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+if [ -n "${CODEX_EXPORT_SKILL_DIR:-}" ]; then
+  EXPORT_SKILL_DIR="$CODEX_EXPORT_SKILL_DIR"
+elif [ -f "$HOME/.codex/skills/export/scripts/export_codex_session.py" ]; then
+  EXPORT_SKILL_DIR="$HOME/.codex/skills/export"
+else
+  EXPORT_SKILL_DIR="$HOME/.agents/skills/export"
+fi
 python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --include-tools --output-dir "$(pwd)/codex-session-exports"
 ```
 

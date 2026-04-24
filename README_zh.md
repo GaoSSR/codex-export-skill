@@ -27,12 +27,6 @@ npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
 
 安装完成后重启 Codex，让 `$export` 触发词被重新发现。
 
-如果想先查看仓库中可安装的 Skill：
-
-```bash
-npx skills add GaoSSR/codex-export-skill --list
-```
-
 ## 快速开始
 
 在 Codex 对话中输入：
@@ -56,8 +50,6 @@ $export export this session with tool logs
 ## 为什么需要它
 
 导出会话的价值在于，你可以把完整交互过程交给另一个模型复盘，分析自己和模型在协作中反复出现的问题，再把这些经验沉淀成稳定的项目规则，例如 `AGENTS.md`。
-
-Claude Code 已经提供 `/export` 命令来完成这类会话导出工作。本 Skill 在 Codex 中沿用同样的心智模型，把入口设计成 `$export`，让从 Claude Code 迁移过来的用户不需要重新记忆一套命令，也不增加额外使用负担。
 
 默认导出 Markdown，是因为 LLM 的输入输出本身就大量使用 Markdown。导出的内容既适合人阅读、归档和 diff，也适合再次交给模型做分析。
 

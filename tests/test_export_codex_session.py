@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 
-SCRIPT_DIR = Path(__file__).resolve().parents[1] / "scripts"
+SCRIPT_DIR = Path(__file__).resolve().parents[1] / "skills" / "export" / "scripts"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import export_codex_session as exporter  # noqa: E402

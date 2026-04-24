@@ -27,12 +27,6 @@ npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
 
 Restart Codex after installation so the `$export` trigger is discovered.
 
-To inspect the available Skill before installing:
-
-```bash
-npx skills add GaoSSR/codex-export-skill --list
-```
-
 ## Quick Start
 
 Inside Codex, ask:
@@ -57,9 +51,7 @@ No extra shell commands are required after installation.
 
 Session export is useful when you want another model pass to review how a conversation went, identify repeated mistakes, and turn those lessons into durable project rules such as `AGENTS.md`.
 
-Claude Code already gives users a `/export` command for this workflow. This Skill keeps the same mental model in Codex by using `$export`, so users coming from Claude Code can migrate without learning a new command pattern or carrying extra naming overhead.
-
-Markdown is the default output because LLM conversations already use Markdown heavily. The exported transcript is easy to read, diff, archive, and feed back into another model for analysis.
+Markdown is the default output because LLM conversations already use Markdown heavily. The transcript stays easy to read, diff, archive, and feed back into another model for analysis.
 
 ## Features
 

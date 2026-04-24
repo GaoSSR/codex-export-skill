@@ -27,6 +27,17 @@ npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
 
 Restart Codex after installation so the `$export` trigger is discovered.
 
+### Upgrade Or Reinstall
+
+If you installed an earlier version, remove stale copies first. Otherwise an old `~/.codex/skills/export` can shadow the newer install created by `npx skills`.
+
+```bash
+rm -rf "${CODEX_HOME:-$HOME/.codex}/skills/export" "$HOME/.agents/skills/export"
+npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
+```
+
+Restart Codex after reinstalling.
+
 ## Quick Start
 
 Inside Codex, ask:

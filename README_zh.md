@@ -27,6 +27,17 @@ npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
 
 安装完成后重启 Codex，让 `$export` 触发词被重新发现。
 
+### 升级或重装
+
+如果你之前安装过旧版本，请先删除旧副本。否则旧的 `~/.codex/skills/export` 可能会遮蔽 `npx skills` 新安装的版本。
+
+```bash
+rm -rf "${CODEX_HOME:-$HOME/.codex}/skills/export" "$HOME/.agents/skills/export"
+npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
+```
+
+重装完成后重启 Codex。
+
 ## 快速开始
 
 在 Codex 对话中输入：

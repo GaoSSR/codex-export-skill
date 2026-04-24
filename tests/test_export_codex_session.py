@@ -261,6 +261,83 @@ class ExportCodexSessionTest(unittest.TestCase):
         self.assertIn("visible user request", markdown)
         self.assertNotIn("/secret/repo", markdown)
 
+    def test_skips_skill_context_injection(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": (
+                                "<skill>\n"
+                                "<name>export</name>\n"
+                                "<path>/Users/example/.agents/skills/export/SKILL.md</path>\n"
+                                "---\n"
+                                "name: export\n"
+                                "description: Export Codex chat history.\n"
+                                "---\n"
+                                "# Export\n"
+                                "</skill>"
+                            ),
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:01Z",
+                        "type": "event_msg",
+                        "payload": {"type": "user_message", "message": "visible user request"},
+                    },
+                ],
+            )
+
+            transcript = exporter.read_transcript(session_file, include_tools=False)
+            markdown = exporter.render_markdown(transcript, selected_by="test", include_tools=False)
+
+        self.assertIn("visible user request", markdown)
+        self.assertNotIn("<name>export</name>", markdown)
+        self.assertNotIn("/Users/example/.agents/skills/export/SKILL.md", markdown)
+
+    def test_redacts_embedded_skill_context_in_user_message(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
+            write_jsonl(
+                session_file,
+                [
+                    {
+                        "timestamp": "2026-04-24T02:00:00Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": (
+                                "Why was this exported?\n\n"
+                                "<skill>\n"
+                                "<name>export</name>\n"
+                                "<path>/Users/example/.agents/skills/export/SKILL.md</path>\n"
+                                "---\n"
+                                "name: export\n"
+                                "description: Export Codex chat history.\n"
+                                "---\n"
+                                "# Export\n"
+                                "</skill>\n"
+                                "Please explain."
+                            ),
+                        },
+                    },
+                ],
+            )
+
+            transcript = exporter.read_transcript(session_file, include_tools=False)
+            markdown = exporter.render_markdown(transcript, selected_by="test", include_tools=False)
+
+        self.assertIn("Why was this exported?", markdown)
+        self.assertIn("[Filtered Codex Skill context injection]", markdown)
+        self.assertIn("Please explain.", markdown)
+        self.assertNotIn("<name>export</name>", markdown)
+        self.assertNotIn("/Users/example/.agents/skills/export/SKILL.md", markdown)
+
     def test_preserves_quoted_context_marker_in_normal_user_message(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             session_file = Path(tmp) / "rollout-2026-04-24T10-00-00-019dbd51-d1c6-7943-a58a-9fa11f102ea8.jsonl"
@@ -283,6 +360,22 @@ class ExportCodexSessionTest(unittest.TestCase):
                             "message": "A normal message can mention <INSTRUCTIONS> literally.",
                         },
                     },
+                    {
+                        "timestamp": "2026-04-24T02:00:02Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": "Why did the exporter include this <skill> marker?",
+                        },
+                    },
+                    {
+                        "timestamp": "2026-04-24T02:00:03Z",
+                        "type": "event_msg",
+                        "payload": {
+                            "type": "user_message",
+                            "message": "Here is a sample:\n<skill>\n<name>demo</name>\n</skill>\nWhy was it exported?",
+                        },
+                    },
                 ],
             )
 
@@ -291,6 +384,9 @@ class ExportCodexSessionTest(unittest.TestCase):
 
         self.assertIn('Please explain what "<environment_context>" means in docs.', markdown)
         self.assertIn("A normal message can mention <INSTRUCTIONS> literally.", markdown)
+        self.assertIn("Why did the exporter include this <skill> marker?", markdown)
+        self.assertIn("Here is a sample:", markdown)
+        self.assertIn("<name>demo</name>", markdown)
 
     def test_preserves_literal_agents_mention_in_normal_user_message(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

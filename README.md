@@ -97,11 +97,12 @@ By default, the export excludes:
 - system prompts
 - developer instructions
 - AGENTS or project-doc context injection
+- Codex Skill context injection such as `<skill>...</skill>`
 - environment context injection
 - encrypted or summarized reasoning records
 - tool calls and command output
 
-Tool calls and command output are exported only when you explicitly ask the Skill to include tool logs.
+Tool calls and command output are exported only when you explicitly ask the Skill to include tool logs. If Codex Skill context appears inside a visible message, the exporter redacts that internal `<skill>...</skill>` block while preserving the surrounding user text.
 
 Advanced script users can pass `--json` for machine-readable output, or `--show-paths` when they intentionally need full local source paths in Markdown metadata.
 

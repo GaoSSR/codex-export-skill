@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- Redact Codex Skill context blocks embedded in visible messages while preserving surrounding user text.
+
 ## 0.1.0 - 2026-04-24
 
 - Initial public Codex Skill for exporting local Codex sessions as Markdown transcripts.

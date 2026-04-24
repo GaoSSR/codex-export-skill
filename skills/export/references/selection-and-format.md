@@ -34,6 +34,8 @@ The exporter intentionally skips:
 - `turn_context`
 - `response_item` messages from developer/system roles
 - AGENTS/project-doc context injection messages
+- Codex Skill context injection messages wrapped in `<skill>...</skill>`
+- Codex Skill context blocks embedded inside otherwise visible messages are redacted while surrounding text is preserved.
 - encrypted or summarized reasoning records
 - duplicate `event_msg.agent_message` records
 

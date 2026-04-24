@@ -204,6 +204,55 @@ def text_from_content_items(items: Any, wanted_types: set[str]) -> str:
     return "\n".join(part for part in parts if part)
 
 
+FILTERED_SKILL_CONTEXT = "[Filtered Codex Skill context injection]"
+
+
+def is_line_boundary(text: str, index: int) -> bool:
+    return index == 0 or text[index - 1] == "\n"
+
+
+def looks_like_skill_context_injection(block: str) -> bool:
+    head = block[:5000]
+    return block.lstrip().startswith("<skill>") and "<path>" in head and "SKILL.md" in head
+
+
+def redact_skill_context_blocks(text: str) -> str:
+    result: list[str] = []
+    cursor = 0
+    start_marker = "<skill>"
+    end_marker = "</skill>"
+
+    while True:
+        start = text.find(start_marker, cursor)
+        if start == -1:
+            result.append(text[cursor:])
+            break
+
+        end = text.find(end_marker, start + len(start_marker))
+        if end == -1:
+            result.append(text[cursor:])
+            break
+
+        end += len(end_marker)
+        block = text[start:end]
+        if is_line_boundary(text, start) and looks_like_skill_context_injection(block):
+            result.append(text[cursor:start])
+            result.append(FILTERED_SKILL_CONTEXT)
+            cursor = end
+            continue
+
+        result.append(text[cursor:end])
+        cursor = end
+
+    return "".join(result)
+
+
+def sanitize_visible_content(text: str) -> str:
+    if looks_like_context_injection(text):
+        return ""
+    return redact_skill_context_blocks(text)
+
+
 def looks_like_context_injection(text: str) -> bool:
     stripped = text.lstrip()
     head = stripped[:5000]
@@ -215,8 +264,13 @@ def looks_like_context_injection(text: str) -> bool:
         ("<INSTRUCTIONS>", "</INSTRUCTIONS>"),
         ("<environment_context>", "</environment_context>"),
         ("<permissions instructions>", "</permissions instructions>"),
+        ("<skill>", "</skill>"),
     )
-    return any(stripped.startswith(start) and end in head for start, end in wrapper_markers)
+    if not any(stripped.startswith(start) and end in head for start, end in wrapper_markers):
+        return False
+    if stripped.startswith("<skill>"):
+        return looks_like_skill_context_injection(stripped)
+    return True
 
 
 def pretty_json_string(value: str) -> str:
@@ -267,8 +321,8 @@ def read_transcript(path: Path, *, include_tools: bool) -> Transcript:
                 continue
 
             if record_type == "event_msg" and payload.get("type") == "user_message":
-                content = str(payload.get("message") or "").strip()
-                if content and not looks_like_context_injection(content):
+                content = sanitize_visible_content(str(payload.get("message") or "")).strip()
+                if content:
                     has_event_user_messages = True
                     collected_events.append(("event-user", TranscriptEvent(role="user", content=content, timestamp=timestamp)))
                 continue
@@ -289,7 +343,8 @@ def read_transcript(path: Path, *, include_tools: bool) -> Transcript:
                 content = text_from_content_items(payload.get("content"), wanted).strip()
                 if not content:
                     continue
-                if looks_like_context_injection(content):
+                content = sanitize_visible_content(content).strip()
+                if not content:
                     continue
 
                 event = TranscriptEvent(

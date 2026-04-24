@@ -43,7 +43,7 @@ python3 "$EXPORT_SKILL_DIR/scripts/export_codex_session.py" --json --output-dir 
 
 - Default export includes visible user messages and visible assistant messages.
 - Do not paste the full exported transcript into chat unless the user explicitly asks.
-- Do not expose system prompts, developer instructions, AGENTS context injection, environment context injection, or encrypted reasoning. The exporter skips these records.
+- Do not expose system prompts, developer instructions, AGENTS context injection, Codex Skill context injection such as `<skill>...</skill>`, environment context injection, or encrypted reasoning. The exporter skips these records.
 - Tool calls and command outputs are excluded by default. If the user asks for command logs or full execution trace, add `--include-tools`.
 - Local source file paths and cwd metadata are redacted in the Markdown by default. Add `--show-paths` only when the user explicitly asks for full local source paths.
 - Run the exporter as the final substantive action. The short response that reports the exported file path will only appear in a later export.

@@ -22,9 +22,12 @@ The default export must not include:
 - system prompts
 - developer instructions
 - AGENTS or project-doc context injection
+- Codex Skill context injection such as `<skill>...</skill>`
 - environment context injection
 - encrypted or summarized reasoning records
 - tool calls or command output
 - full local source paths in Markdown metadata
 
 Any change that expands exported data must require explicit user opt-in and dedicated regression tests.
+
+If a visible message embeds a Codex Skill context block, the exporter redacts that internal `<skill>...</skill>` block while preserving the rest of the message.

@@ -97,11 +97,12 @@ $export export this session with tool logs
 - system prompt
 - developer 指令
 - AGENTS 或 project-doc 上下注入
+- `<skill>...</skill>` 这类 Codex Skill 上下注入
 - 环境上下文注入
 - 加密或摘要形式的 reasoning 记录
 - 工具调用和命令输出
 
-只有你明确要求 Skill 包含 tool logs 时，工具调用和命令输出才会被导出。
+只有你明确要求 Skill 包含 tool logs 时，工具调用和命令输出才会被导出。如果 Codex Skill 上下文出现在可见消息内部，导出器会脱敏内部 `<skill>...</skill>` 块，同时保留周围的用户文本。
 
 如果直接调用脚本，可以使用 `--json` 获取机器可解析输出；只有在确实需要完整本地源路径时才使用 `--show-paths`。
 

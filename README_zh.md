@@ -1,12 +1,12 @@
 <div align="center">
 
-  <img src="assets/header.png" alt="export - Codex 会话导出为 Markdown 转录稿" />
+  <img src="assets/header.png" width="720" alt="export - Codex 会话导出为 Markdown 转录稿" />
 
   <p><strong>将 Codex 会话导出为干净、适合 LLM 再分析的 Markdown。</strong></p>
 
   <p>
-    📄 <a href="README.md">English</a> |
-    📄 简体中文
+    🌐 <a href="README.md">English</a> |
+    🇨🇳 简体中文
   </p>
 
   <p>
@@ -17,7 +17,7 @@
 
 </div>
 
-`export` 是一个 Codex Skill，用于把本地 Codex 会话历史导出为可读的 Markdown 转录稿。它为 Codex 用户提供接近 `/export` 的工作流，同时保持正常的 Skill 使用方式：安装一次，然后在 Codex 对话里直接调用 `$export`。
+`export` 是一个 Codex Skill，用于为 Codex 用户提供 Claude Code 的 `/export` 会话导出工作流。它可以把本地 Codex 会话历史导出为干净的 Markdown 转录稿，更有利于大模型继续解析、复盘和分析。
 
 ## 安装
 

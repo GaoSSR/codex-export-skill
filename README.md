@@ -1,12 +1,12 @@
 <div align="center">
 
-  <img src="assets/header.png" alt="export - Codex sessions to Markdown transcripts" />
+  <img src="assets/header.png" width="720" alt="export - Codex sessions to Markdown transcripts" />
 
   <p><strong>Export Codex sessions as clean, LLM-ready Markdown.</strong></p>
 
   <p>
-    📄 English |
-    📄 <a href="README_zh.md">简体中文</a>
+    🌐 English |
+    🇨🇳 <a href="README_zh.md">简体中文</a>
   </p>
 
   <p>
@@ -17,7 +17,7 @@
 
 </div>
 
-`export` is a Codex Skill for turning local Codex session history into a readable Markdown transcript. It gives Codex users a `/export`-style workflow today, while keeping the normal user surface inside Codex: install the Skill once, then invoke `$export` in conversation.
+`export` is a Codex Skill that brings Claude Code's `/export` workflow to Codex users. It turns local Codex session history into clean Markdown transcripts, making conversations easier for LLMs to parse, review, and analyze.
 
 ## Installation
 

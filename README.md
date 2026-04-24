@@ -1,54 +1,68 @@
-# export
+<div align="center">
 
-Markdown session export for Codex.
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/headerDark.svg" />
+    <img src="assets/headerLight.svg" alt="export" />
+  </picture>
 
-`export` is a Codex Skill that turns a local Codex session JSONL file into a readable Markdown transcript. It is intended as an interim, user-installable `/export`-style workflow while native Codex session export support is unavailable in the installed CLI.
+  <p><strong>Export Codex sessions as clean, LLM-ready Markdown.</strong></p>
+
+  <p>
+    <a href="#quick-start">Quick Start</a> |
+    <a href="#features">Features</a> |
+    <a href="#safety-boundaries">Safety Boundaries</a> |
+    <a href="#development">Development</a>
+  </p>
+
+  <p>
+    <img alt="Codex Skill" src="https://img.shields.io/badge/Codex-Skill-111827?style=flat-square" />
+    <img alt="Markdown" src="https://img.shields.io/badge/output-Markdown-2563EB?style=flat-square" />
+    <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-0F766E?style=flat-square" />
+  </p>
+
+</div>
+
+`export` is a Codex Skill for turning local Codex session history into a readable Markdown transcript. It gives Codex users a `/export`-style workflow today, while keeping the normal user surface inside Codex: install the Skill once, then invoke `$export` in conversation.
 
 ## Why
 
-Conversation exports are useful when you want another model pass to review how a session went, identify repeated mistakes, and turn those lessons into project rules such as `AGENTS.md`. Markdown is the default format because LLM conversations are already mostly Markdown, and the result is easy to read, diff, archive, and feed back into another model.
+Session export is useful when you want another model pass to review how a conversation went, identify repeated mistakes, and turn those lessons into durable project rules such as `AGENTS.md`.
 
-## What It Exports
+Markdown is the default output because LLM conversations already use Markdown heavily. The exported transcript is easy to read, diff, archive, and feed back into another model for analysis.
 
-By default, the Skill exports:
+## Features
 
-- visible user messages
-- visible assistant messages
-- session metadata such as session id, source file, cwd, timestamps, originator, and CLI version
+- **One-command installation**: install as a Codex Skill with `npx skills add`.
+- **Conversation-native usage**: use `$export` directly inside Codex after installation.
+- **Markdown-first output**: produces clean transcripts designed for humans and LLMs.
+- **Current-session selection**: prefers the active Codex conversation when available.
+- **Workspace-aware fallback**: falls back to the latest session for the current workspace, then latest globally.
+- **Privacy-conscious defaults**: excludes system prompts, developer instructions, AGENTS context injection, environment context injection, reasoning records, and tool logs by default.
+- **Optional tool-log export**: include tool logs only when you explicitly ask for them.
 
-By default, the Skill does not export:
-
-- system prompts
-- developer instructions
-- AGENTS or environment context injection
-- encrypted reasoning
-- tool calls or command output
-
-Tool calls and command output are included only when you explicitly ask the Skill to include tool logs.
-
-## Install
+## Installation
 
 ```bash
 npx skills add GaoSSR/codex-export-skill --agent codex -g -y --copy
 ```
 
-This installs `export` as a global Codex Skill. Restart Codex after installing so the `$export` trigger is discovered.
+Restart Codex after installation so the `$export` trigger is discovered.
 
-To inspect before installing:
+To inspect the available Skill before installing:
 
 ```bash
 npx skills add GaoSSR/codex-export-skill --list
 ```
 
-## Usage
+## Quick Start
 
-After installation, use the Skill directly inside Codex:
+Inside Codex, ask:
 
 ```text
 $export export the current session to Markdown
 ```
 
-The Skill writes the Markdown file into `codex-session-exports/` under the active workspace and replies with the absolute path plus a short summary.
+The Skill writes the transcript to `codex-session-exports/` under the active workspace and replies with the absolute file path plus a short export summary.
 
 More examples:
 
@@ -60,11 +74,30 @@ $export export this session with tool logs
 
 No extra shell commands are required after installation.
 
+## Safety Boundaries
+
+By default, the export includes:
+
+- visible user messages
+- visible assistant messages
+- session metadata such as session id, source file, cwd, timestamps, originator, and CLI version
+
+By default, the export excludes:
+
+- system prompts
+- developer instructions
+- AGENTS or project-doc context injection
+- environment context injection
+- encrypted or summarized reasoning records
+- tool calls and command output
+
+Tool calls and command output are exported only when you explicitly ask the Skill to include tool logs.
+
 ## Session Selection
 
 When you do not specify a session, the Skill tries to export the current Codex conversation first. If the current conversation id is unavailable, it falls back to the latest session recorded for the active workspace, then to the latest session globally.
 
-If you want a specific session, ask for it by session id:
+To export a specific session, ask by session id:
 
 ```text
 $export export session <session-id> to Markdown
@@ -72,24 +105,28 @@ $export export session <session-id> to Markdown
 
 ## Development
 
-Run the test suite:
+Run tests:
 
 ```bash
 python3 -m unittest discover -s skills/export/tests -p 'test_*.py' -v
 ```
 
-Validate the Skill shape when Codex's system skill validator is available:
+Validate the Skill shape:
 
 ```bash
 python3 "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" skills/export
 ```
 
-## Upstream Direction
+## Roadmap
 
-The long-term target is native Codex CLI support for `/export`, with Markdown as the default output format. This repository keeps the workflow usable as a Skill until an upstream implementation is available and merged.
+The long-term target is native Codex CLI support for `/export`, with Markdown as the default transcript format. This repository keeps the workflow usable as a Skill until native support is available upstream.
 
-This is not an official OpenAI project.
+## Contributing
+
+Issues and pull requests are welcome. Please keep changes aligned with the core contract: a simple Codex Skill surface, Markdown-first output, and conservative privacy defaults.
 
 ## License
 
-MIT
+Licensed under the [Apache License 2.0](LICENSE).
+
+This is not an official OpenAI project.

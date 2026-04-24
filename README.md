@@ -5,8 +5,8 @@
   <p><strong>Export Codex sessions as clean, LLM-ready Markdown.</strong></p>
 
   <p>
-    English |
-    <a href="README_zh.md">简体中文</a>
+    📄 English |
+    📄 <a href="README_zh.md">简体中文</a>
   </p>
 
   <p>
@@ -56,6 +56,8 @@ No extra shell commands are required after installation.
 ## Why
 
 Session export is useful when you want another model pass to review how a conversation went, identify repeated mistakes, and turn those lessons into durable project rules such as `AGENTS.md`.
+
+Claude Code already gives users a `/export` command for this workflow. This Skill keeps the same mental model in Codex by using `$export`, so users coming from Claude Code can migrate without learning a new command pattern or carrying extra naming overhead.
 
 Markdown is the default output because LLM conversations already use Markdown heavily. The exported transcript is easy to read, diff, archive, and feed back into another model for analysis.
 

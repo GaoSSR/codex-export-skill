@@ -16,7 +16,7 @@
     <a href="#quick-start">Quick Start</a> |
     <a href="#features">Features</a> |
     <a href="#safety-boundaries">Safety Boundaries</a> |
-    <a href="#development">Development</a>
+    <a href="#license">License</a>
   </p>
 
   <p>
@@ -106,20 +106,6 @@ To export a specific session, ask by session id:
 
 ```text
 $export export session <session-id> to Markdown
-```
-
-## Development
-
-Run tests:
-
-```bash
-python3 -m unittest discover -s skills/export/tests -p 'test_*.py' -v
-```
-
-Validate the Skill shape:
-
-```bash
-python3 "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" skills/export
 ```
 
 ## Roadmap

@@ -16,7 +16,7 @@
     <a href="#快速开始">快速开始</a> |
     <a href="#功能特性">功能特性</a> |
     <a href="#安全边界">安全边界</a> |
-    <a href="#开发">开发</a>
+    <a href="#开源协议">开源协议</a>
   </p>
 
   <p>
@@ -106,20 +106,6 @@ $export export this session with tool logs
 
 ```text
 $export export session <session-id> to Markdown
-```
-
-## 开发
-
-运行测试：
-
-```bash
-python3 -m unittest discover -s skills/export/tests -p 'test_*.py' -v
-```
-
-校验 Skill 结构：
-
-```bash
-python3 "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" skills/export
 ```
 
 ## 路线图
